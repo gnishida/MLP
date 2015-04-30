@@ -29,14 +29,15 @@ int main() {
 
 	cv::Mat_<uchar> img = cv::Mat_<uchar>::ones(100, 100) * 255;
 
-	MLP mlp(X, 1, 1, 1);
+	MLP mlp(X, Y, 1, 1, 1);
+	mlp.train(X, Y, 0.01, 0.1, 100);
 	for (int i = 0; i < N; ++i) {
 		cv::Mat_<double> x = (cv::Mat_<double>(1, 1) << (double)i / N * 2 - 1);
 		cv::Mat_<double> y = mlp.predict(x);
 
 		cv::Mat_<double> t = func(x);
 
-		cout << x(0, 0) << "," << y(0, 0) << endl;
+		cout << t(0, 0) << ", " << y(0, 0) << endl;
 
 		
 		img((int)((y(0, 0) + 2) * 25), (int)((x(0, 0) + 1) * 50)) = 0;

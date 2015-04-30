@@ -17,7 +17,8 @@ public:
 
 	cv::Mat_<double> params();
 	cv::Mat_<double> predict(const cv::Mat_<double>& input);
-	double negative_log_likelihood(const cv::Mat_<double>& input, const cv::Mat_<double>& output);
+	double negative_log_likelihood(const cv::Mat_<double>& input, const cv::Mat_<double>& target);
+	cv::Mat_<double> back_propagation(const cv::Mat_<double>& delta, double lambda, double alpha);
 
 private:
 	
