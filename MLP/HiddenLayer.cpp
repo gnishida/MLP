@@ -1,6 +1,8 @@
 ﻿#include "HiddenLayer.h"
 #include <math.h>
 
+using namespace std;
+
 HiddenLayer::HiddenLayer(cv::Mat_<double> input, int n_in, int n_out) {
 	W = cv::Mat_<double>(n_in, n_out);
 	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
@@ -38,7 +40,7 @@ cv::Mat_<double> HiddenLayer::params() {
 }
 
 /**
- * inputデータからoutputデータを計算し、outputを更新すると共に、それを返却する。
+ * inputデータを更新し、それに基づきoutputデータを計算し、outputを更新すると共に、それを返却する。
  * inputデータは、J次元の入力データがNサンプルある時、NxJの行列で表現される。
  * つまり、各行が各サンプルに相当する。
  * 一方、outputは、K次元の出力データがNサンプル分ある時、NxKの行列で表現される。
@@ -47,8 +49,9 @@ cv::Mat_<double> HiddenLayer::params() {
  * @return			outputデータ
  */
 cv::Mat_<double> HiddenLayer::predict(const cv::Mat_<double>& input) {
-	output = mat_tanh(input * W + cv::repeat(b, input.rows, 1));
-	return output;
+	this->input = input;
+	this->output = mat_tanh(input * W + cv::repeat(b, input.rows, 1));
+	return this->output;
 }
 
 /**
@@ -60,9 +63,9 @@ cv::Mat_<double> HiddenLayer::predict(const cv::Mat_<double>& input) {
  * @param alpha		学習速度
  * @return			input誤差
  */
-cv::Mat_<double> HiddenLayer::back_propagation(const cv::Mat_<double>& delta, double lambda, double alpha) {
-	cv::Mat_<double> dW = cv::Mat_<double>::zeros(W.size());
-	cv::Mat_<double> db = cv::Mat_<double>::zeros(b.size());
+void HiddenLayer::grad(const cv::Mat_<double>& delta, double lambda, cv::Mat_<double>& dW, cv::Mat_<double>& db) {
+	dW = cv::Mat_<double>::zeros(W.size());
+	db = cv::Mat_<double>::zeros(b.size());
 
 	// dW, dbを計算する
 	int N = delta.rows;
@@ -80,15 +83,6 @@ cv::Mat_<double> HiddenLayer::back_propagation(const cv::Mat_<double>& delta, do
 		}
 		db(0, c) += lambda * b(0, c);
 	}
-
-	// 下位レイヤへ伝播する誤差を計算する
-	cv::Mat_<double> propagation = delta * W.t();
-
-	// W, bを更新する
-	W -= alpha * dW;
-	b -= alpha * db;
-
-	return propagation;
 }
 
 void HiddenLayer::init(cv::Mat_<double> input, int n_in, int n_out, cv::Mat_<double> W, cv::Mat_<double> b) {

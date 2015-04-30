@@ -116,12 +116,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HiddenLayer.cpp" />
+    <ClCompile Include="LinearRegression.cpp" />
     <ClCompile Include="LogisticRegression.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MLP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HiddenLayer.h" />
+    <ClInclude Include="LinearRegression.h" />
     <ClInclude Include="LogisticRegression.h" />
     <ClInclude Include="MLP.h" />
   </ItemGroup>

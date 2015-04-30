@@ -75,9 +75,9 @@ double LogisticRegression::negative_log_likelihood(const cv::Mat_<double>& input
  * @param alpha		学習速度
  * @return			input誤差
  */
-cv::Mat_<double> LogisticRegression::back_propagation(const cv::Mat_<double>& delta, double lambda, double alpha) {
-	cv::Mat_<double> dW = cv::Mat_<double>::zeros(W.size());
-	cv::Mat_<double> db = cv::Mat_<double>::zeros(b.size());
+void LogisticRegression::grad(const cv::Mat_<double>& delta, double lambda, cv::Mat_<double>& dW, cv::Mat_<double>& db) {
+	dW = cv::Mat_<double>::zeros(W.size());
+	db = cv::Mat_<double>::zeros(b.size());
 
 	// dW, dbを計算する
 	int N = delta.rows;
@@ -95,13 +95,4 @@ cv::Mat_<double> LogisticRegression::back_propagation(const cv::Mat_<double>& de
 		}
 		db(0, c) += lambda * b(0, c);
 	}
-
-	// 下位レイヤへ伝播する誤差を計算する
-	cv::Mat_<double> propagation = delta * W.t();
-
-	// W, bを更新する
-	W -= alpha * dW;
-	b -= alpha * db;
-
-	return propagation;
 }
