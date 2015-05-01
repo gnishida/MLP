@@ -3,7 +3,13 @@
 
 using namespace std;
 
-LinearRegression::LinearRegression(int n_in, int n_out) {
+LinearRegression::LinearRegression() {
+}
+
+/**
+ * パラメータW, bをランダムに初期化する
+ */
+void LinearRegression::init(int n_in, int n_out) {
 	this->n_in = n_in;
 	this->n_out = n_out;
 
@@ -11,13 +17,9 @@ LinearRegression::LinearRegression(int n_in, int n_out) {
 	b = cv::Mat_<double>::zeros(1, n_out);
 
 	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
-	//init();
-}
-
-/**
- * パラメータW, bをランダムに初期化する
- */
-void LinearRegression::init() {
+	cv::randu(b, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
+	
+	/*
 	random_device rd;
 	mt19937 mt(rd());
 	uniform_real_distribution<double> distribution(-1, 1);
@@ -27,6 +29,7 @@ void LinearRegression::init() {
 			W(r, c) = distribution(mt);
 		}
 	}
+	*/
 }
 
 /**

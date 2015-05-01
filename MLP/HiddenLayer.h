@@ -13,9 +13,9 @@ public:
 	cv::Mat_<double> b;
 
 public:
-	HiddenLayer(int n_in, int n_out);
+	HiddenLayer();
 
-	void init();
+	void init(int n_in, int n_out);
 	cv::Mat_<double> predict(const cv::Mat_<double>& input);
 	void grad(const cv::Mat_<double>& delta, double lambda, cv::Mat_<double>& dW, cv::Mat_<double>& db);
 

@@ -4,7 +4,13 @@
 
 using namespace std;
 
-HiddenLayer::HiddenLayer(int n_in, int n_out) {
+HiddenLayer::HiddenLayer() {
+}
+
+/**
+ * パラメータWをランダムに初期化する
+ */
+void HiddenLayer::init(int n_in, int n_out) {
 	this->n_in = n_in;
 	this->n_out = n_out;
 	this->W = W;
@@ -14,13 +20,9 @@ HiddenLayer::HiddenLayer(int n_in, int n_out) {
 	b = cv::Mat_<double>::zeros(1, n_out);
 
 	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
-	//init();
-}
+	cv::randu(b, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
 
-/**
- * パラメータWをランダムに初期化する
- */
-void HiddenLayer::init() {
+	/*
 	random_device rd;
 	mt19937 mt(rd());
 	uniform_real_distribution<double> distribution(-1, 1);
@@ -30,6 +32,7 @@ void HiddenLayer::init() {
 			W(r, c) = distribution(mt);
 		}
 	}
+	*/
 }
 
 /**

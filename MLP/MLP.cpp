@@ -9,19 +9,20 @@
  * @param Y				出力データ（各行が、各出力y_iに相当）
  * @param hiddenSize	hiddenレイヤのユニット数
  */
-MLP::MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_hidden) {
-	int n_in = X.cols;
-	int n_out = Y.cols;
-	hiddenLayer = new HiddenLayer(n_in, n_hidden);
-	regressionLayer = new LinearRegression(n_hidden, n_out);
+MLP::MLP(int n_in, int n_hidden, int n_out) {
+	this->n_in = n_in;
+	this->n_hidden = n_hidden;
+	this->n_out = n_out;
+
+	init();
 }
 
 /**
  * パラメータW, bをランダムに初期化する
  */
 void MLP::init() {
-	hiddenLayer->init();
-	regressionLayer->init();
+	hiddenLayer.init(n_in, n_hidden);
+	regressionLayer.init(n_hidden, n_out);
 }
 
 /**
@@ -34,8 +35,8 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 	{
 		cv::Mat_<double> theta1;
 		cv::Mat_<double> dW1, db1, dW2, db2;
-		regressionLayer->grad(Y - predict(X), lambda, dW2, db2);
-		hiddenLayer->grad((Y - predict(X)) * regressionLayer->W.t(), lambda, dW1, db1);
+		regressionLayer.grad(Y - predict(X), lambda, dW2, db2);
+		hiddenLayer.grad((Y - predict(X)) * regressionLayer.W.t(), lambda, dW1, db1);
 		encodeParams(dW1, db1, dW2, db2, theta1);
 
 		cv::Mat_<double> theta2;
@@ -46,7 +47,7 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 			//cout << theta1(0, i) << ", " << theta2(0, i) << ", " << theta1(0, i) - theta2(0, i) << endl;
 			if (abs(theta1(0, i) - theta2(0, i)) > 0.00001) {
 				cout << "There seems something wrong with derivatives." << endl;
-				return;
+				//return;
 			}
 		}
 	}
@@ -54,7 +55,8 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 	// トレーニング
 	for (int iter = 0; iter < maxIter; ++iter) {
 		double c = cost(X, Y, lambda);
-		if (c > 1000000) {
+		//cout << "Score: " << c << endl;		
+		if (c > 10000000) {
 			cout << "Warning: cost is too high!" << endl;
 			break;
 		}
@@ -63,14 +65,14 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 
 		cv::Mat_<double> theta1;
 		cv::Mat_<double> dW1, db1, dW2, db2;
-		regressionLayer->grad(Y - regressionLayer->output, lambda, dW2, db2);
-		hiddenLayer->grad((Y - regressionLayer->output) * regressionLayer->W.t(), lambda, dW1, db1);
+		regressionLayer.grad(Y - regressionLayer.output, lambda, dW2, db2);
+		hiddenLayer.grad((Y - regressionLayer.output) * regressionLayer.W.t(), lambda, dW1, db1);
 		
 		// W、bを更新
-		hiddenLayer->W -= dW1 * alpha;
-		hiddenLayer->b -= db1 * alpha;
-		regressionLayer->W -= dW2 * alpha;
-		regressionLayer->b -= db2 * alpha;
+		hiddenLayer.W -= dW1 * alpha;
+		hiddenLayer.b -= db1 * alpha;
+		regressionLayer.W -= dW2 * alpha;
+		regressionLayer.b -= db2 * alpha;
 	}
 
 	// 微分のチェック
@@ -101,13 +103,13 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 
 void MLP::numericalGrad(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, double lambda, cv::Mat_<double>& dW1, cv::Mat_<double>& db1, cv::Mat_<double>& dW2, cv::Mat_<double>& db2) {
 	cv::Mat_<double> backup_W1, backup_b1, backup_W2, backup_b2;
-	hiddenLayer->W.copyTo(backup_W1);
-	hiddenLayer->b.copyTo(backup_b1);
-	regressionLayer->W.copyTo(backup_W2);
-	regressionLayer->b.copyTo(backup_b2);
+	hiddenLayer.W.copyTo(backup_W1);
+	hiddenLayer.b.copyTo(backup_b1);
+	regressionLayer.W.copyTo(backup_W2);
+	regressionLayer.b.copyTo(backup_b2);
 
 	cv::Mat_<double> theta;
-	encodeParams(hiddenLayer->W, hiddenLayer->b, regressionLayer->W, regressionLayer->b, theta);
+	encodeParams(hiddenLayer.W, hiddenLayer.b, regressionLayer.W, regressionLayer.b, theta);
 
 	cv::Mat_<double> g(theta.size());
 	double epsilon = 0.0001;
@@ -115,10 +117,10 @@ void MLP::numericalGrad(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, do
 		cv::Mat_<double> d_theta = cv::Mat_<double>::zeros(theta.size());
 		d_theta(0, i) = epsilon;
 
-		decodeParams(theta + d_theta, hiddenLayer->W, hiddenLayer->b, regressionLayer->W, regressionLayer->b);
+		decodeParams(theta + d_theta, hiddenLayer.W, hiddenLayer.b, regressionLayer.W, regressionLayer.b);
 
 		double c1 = cost(X, Y, lambda);
-		decodeParams(theta - d_theta, hiddenLayer->W, hiddenLayer->b, regressionLayer->W, regressionLayer->b);
+		decodeParams(theta - d_theta, hiddenLayer.W, hiddenLayer.b, regressionLayer.W, regressionLayer.b);
 
 		double c2 = cost(X, Y, lambda);
 
@@ -126,21 +128,21 @@ void MLP::numericalGrad(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, do
 	}
 	decodeParams(g, dW1, db1, dW2, db2);
 
-	backup_W1.copyTo(hiddenLayer->W);
-	backup_b1.copyTo(hiddenLayer->b);
-	backup_W2.copyTo(regressionLayer->W);
-	backup_b2.copyTo(regressionLayer->b);
+	backup_W1.copyTo(hiddenLayer.W);
+	backup_b1.copyTo(hiddenLayer.b);
+	backup_W2.copyTo(regressionLayer.W);
+	backup_b2.copyTo(regressionLayer.b);
 }
 
 cv::Mat_<double> MLP::predict(const Mat_<double>& input) {
-	cv::Mat_<double> h = hiddenLayer->predict(input);
-	return regressionLayer->predict(h);
+	cv::Mat_<double> h = hiddenLayer.predict(input);
+	return regressionLayer.predict(h);
 }
 
 double MLP::cost(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, double lambda) {
 	predict(X);
-	double L = mat_sqsum(Y - regressionLayer->output) * 0.5 / X.rows;
-	L += lambda * 0.5 * (mat_sqsum(hiddenLayer->W) + mat_sqsum(hiddenLayer->b) + mat_sqsum(regressionLayer->W) + mat_sqsum(regressionLayer->b));
+	double L = mat_sqsum(Y - regressionLayer.output) * 0.5 / X.rows;
+	L += lambda * 0.5 * (mat_sqsum(hiddenLayer.W) + mat_sqsum(hiddenLayer.b) + mat_sqsum(regressionLayer.W) + mat_sqsum(regressionLayer.b));
 	return L;
 }
 

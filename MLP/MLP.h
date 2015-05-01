@@ -11,12 +11,15 @@ using namespace cv;
 
 class MLP {
 private:
-	HiddenLayer* hiddenLayer;
+	int n_in;
+	int n_hidden;
+	int n_out;
+	HiddenLayer hiddenLayer;
 	//LogisticRegression* regressionLayer;
-	LinearRegression* regressionLayer;
+	LinearRegression regressionLayer;
 
 public:
-	MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_hidden);
+	MLP(int n_in, int n_hidden, int n_out);
 
 	void init();
 	void train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, double alpha, int maxIter);

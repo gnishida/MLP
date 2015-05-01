@@ -108,4 +108,14 @@ bool loadData(char* filename, cv::Mat_<double>& X, cv::Mat_<double>& Y) {
 	return true;
 }
 
+void normalize(cv::Mat_<double> mat, cv::Mat_<double>& normalized_mat, cv::Mat_<double>& mu, cv::Mat_<double>& abs_max) {
+	// normalization
+	cv::reduce(mat, mu, 0, CV_REDUCE_AVG);
+	normalized_mat = mat - cv::repeat(mu, mat.rows, 1);
+
+	// [-1, 1]にする
+	cv::reduce(cv::abs(normalized_mat), abs_max, 0, CV_REDUCE_MAX);
+	normalized_mat /= cv::repeat(abs_max, mat.rows, 1);
+}
+
 }
