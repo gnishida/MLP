@@ -12,8 +12,16 @@
 MLP::MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_hidden) {
 	int n_in = X.cols;
 	int n_out = Y.cols;
-	hiddenLayer = new HiddenLayer(X, n_in, n_hidden);
-	regressionLayer = new LinearRegression(hiddenLayer->output, n_hidden, n_out);
+	hiddenLayer = new HiddenLayer(n_in, n_hidden);
+	regressionLayer = new LinearRegression(n_hidden, n_out);
+}
+
+/**
+ * パラメータW, bをランダムに初期化する
+ */
+void MLP::init() {
+	hiddenLayer->init();
+	regressionLayer->init();
 }
 
 /**
@@ -35,7 +43,7 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 		encodeParams(dW1, db1, dW2, db2, theta2);
 
 		for (int i = 0; i < theta1.cols; ++i) {
-			cout << theta1(0, i) << ", " << theta2(0, i) << ", " << theta1(0, i) - theta2(0, i) << endl;
+			//cout << theta1(0, i) << ", " << theta2(0, i) << ", " << theta1(0, i) - theta2(0, i) << endl;
 			if (abs(theta1(0, i) - theta2(0, i)) > 0.00001) {
 				cout << "There seems something wrong with derivatives." << endl;
 				return;
@@ -45,16 +53,18 @@ void MLP::train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, dou
 
 	// トレーニング
 	for (int iter = 0; iter < maxIter; ++iter) {
-		predict(X);
-
-		cout << "Score: " << cost(X, Y, lambda) << endl;
-
-		cv::Mat_<double> h2 = predict(X);
+		double c = cost(X, Y, lambda);
+		if (c > 1000000) {
+			cout << "Warning: cost is too high!" << endl;
+			break;
+		}
+		//cout << "Score: " << cost(X, Y, lambda) << endl;
+		//cout << "Score without L2: " << cost(X, Y, 0) << endl;
 
 		cv::Mat_<double> theta1;
 		cv::Mat_<double> dW1, db1, dW2, db2;
-		regressionLayer->grad(Y - h2, lambda, dW2, db2);
-		hiddenLayer->grad((Y - h2) * regressionLayer->W.t(), lambda, dW1, db1);
+		regressionLayer->grad(Y - regressionLayer->output, lambda, dW2, db2);
+		hiddenLayer->grad((Y - regressionLayer->output) * regressionLayer->W.t(), lambda, dW1, db1);
 		
 		// W、bを更新
 		hiddenLayer->W -= dW1 * alpha;
@@ -107,11 +117,9 @@ void MLP::numericalGrad(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, do
 
 		decodeParams(theta + d_theta, hiddenLayer->W, hiddenLayer->b, regressionLayer->W, regressionLayer->b);
 
-		predict(X);
 		double c1 = cost(X, Y, lambda);
 		decodeParams(theta - d_theta, hiddenLayer->W, hiddenLayer->b, regressionLayer->W, regressionLayer->b);
 
-		predict(X);
 		double c2 = cost(X, Y, lambda);
 
 		g(0, i) = (c1 - c2) / 2.0 / epsilon;
@@ -130,6 +138,7 @@ cv::Mat_<double> MLP::predict(const Mat_<double>& input) {
 }
 
 double MLP::cost(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, double lambda) {
+	predict(X);
 	double L = mat_sqsum(Y - regressionLayer->output) * 0.5 / X.rows;
 	L += lambda * 0.5 * (mat_sqsum(hiddenLayer->W) + mat_sqsum(hiddenLayer->b) + mat_sqsum(regressionLayer->W) + mat_sqsum(regressionLayer->b));
 	return L;

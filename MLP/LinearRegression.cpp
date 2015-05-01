@@ -1,18 +1,32 @@
 ﻿#include "LinearRegression.h"
+#include <random>
 
 using namespace std;
 
-LinearRegression::LinearRegression(cv::Mat_<double> input, int n_in, int n_out) {
-	this->input = input;
+LinearRegression::LinearRegression(int n_in, int n_out) {
 	this->n_in = n_in;
 	this->n_out = n_out;
 
 	W = cv::Mat_<double>(n_in, n_out);
-	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
-
 	b = cv::Mat_<double>::zeros(1, n_out);
 
-	predict(input);
+	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
+	//init();
+}
+
+/**
+ * パラメータW, bをランダムに初期化する
+ */
+void LinearRegression::init() {
+	random_device rd;
+	mt19937 mt(rd());
+	uniform_real_distribution<double> distribution(-1, 1);
+
+	for (int r = 0; r < W.rows; ++r) {
+		for (int c = 0; c < W.cols; ++c) {
+			W(r, c) = distribution(mt);
+		}
+	}
 }
 
 /**

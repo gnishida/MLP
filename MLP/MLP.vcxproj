@@ -120,12 +120,14 @@
     <ClCompile Include="LogisticRegression.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MLP.cpp" />
+    <ClCompile Include="MyUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HiddenLayer.h" />
     <ClInclude Include="LinearRegression.h" />
     <ClInclude Include="LogisticRegression.h" />
     <ClInclude Include="MLP.h" />
+    <ClInclude Include="MyUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

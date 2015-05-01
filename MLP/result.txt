@@ -1,0 +1,7 @@
+Best hyperparameters for smalldata.txt:
+lambda: 0.000010
+alpha: 0.000010
+hiddenSize: 3
+maxIter: 50000
+Score: 0.057296
+Avg error on test data: 0.833720

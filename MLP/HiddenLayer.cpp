@@ -1,42 +1,35 @@
 ﻿#include "HiddenLayer.h"
 #include <math.h>
+#include <random>
 
 using namespace std;
 
-HiddenLayer::HiddenLayer(cv::Mat_<double> input, int n_in, int n_out) {
-	W = cv::Mat_<double>(n_in, n_out);
-	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
+HiddenLayer::HiddenLayer(int n_in, int n_out) {
+	this->n_in = n_in;
+	this->n_out = n_out;
+	this->W = W;
+	this->b = b;
 
+	W = cv::Mat_<double>(n_in, n_out);
 	b = cv::Mat_<double>::zeros(1, n_out);
 
-	init(input, n_in, n_out, W, b);
-}
-
-HiddenLayer::HiddenLayer(cv::Mat_<double> input, int n_in, int n_out, cv::Mat_<double> W, cv::Mat_<double> b) {
-	init(input, n_in, n_out, W, b);
+	cv::randu(W, -sqrt(6.0 / (n_in + n_out)), sqrt(6.0 / (n_in + n_out)));
+	//init();
 }
 
 /**
- * パラメータW, bを１つの行ベクトルにして返却する。
- *
- * @return		パラメータ群（行ベクトル）
+ * パラメータWをランダムに初期化する
  */
-cv::Mat_<double> HiddenLayer::params() {
-	cv::Mat_<double> ret(1, W.rows * W.cols + b.rows * b.cols);
-
-	int index = 0;
+void HiddenLayer::init() {
+	random_device rd;
+	mt19937 mt(rd());
+	uniform_real_distribution<double> distribution(-1, 1);
+	
 	for (int r = 0; r < W.rows; ++r) {
 		for (int c = 0; c < W.cols; ++c) {
-			ret(0, index++) = W(r, c);
+			W(r, c) = distribution(mt);
 		}
 	}
-	for (int r = 0; r < b.rows; ++r) {
-		for (int c = 0; c < b.cols; ++c) {
-			ret(0, index++) = b(r, c);
-		}
-	}
-
-	return ret;
 }
 
 /**
@@ -83,16 +76,6 @@ void HiddenLayer::grad(const cv::Mat_<double>& delta, double lambda, cv::Mat_<do
 		}
 		db(0, c) = db(0, c) / N + lambda * b(0, c);
 	}
-}
-
-void HiddenLayer::init(cv::Mat_<double> input, int n_in, int n_out, cv::Mat_<double> W, cv::Mat_<double> b) {
-	this->input = input;
-	this->n_in = n_in;
-	this->n_out = n_out;
-	this->W = W;
-	this->b = b;
-
-	predict(input);
 }
 
 cv::Mat_<double> HiddenLayer::mat_tanh(const cv::Mat_<double>& mat) {
