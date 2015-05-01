@@ -50,13 +50,13 @@ void LinearRegression::grad(const cv::Mat_<double>& delta, double lambda, cv::Ma
 			for (int i = 0; i < N; ++i) {
 				dW(r, c) -= delta(i, c) * input(i, r);
 			}
-			dW(r, c) += lambda * W(r, c);
+			dW(r, c) = dW(r, c) / N + lambda * W(r, c);
 		}
 	}
 	for (int c = 0; c < dW.cols; ++c) {
 		for (int i = 0; i < N; ++i) {
 			db(0, c) -= delta(i, c);
 		}
-		db(0, c) += lambda * b(0, c);
+		db(0, c) = db(0, c) / N + lambda * b(0, c);
 	}
 }

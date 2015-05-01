@@ -36,8 +36,8 @@ int main() {
 
 	cv::Mat_<uchar> img = cv::Mat_<uchar>::ones(100, 100) * 255;
 
-	MLP mlp(X, Y, X.cols, 3, Y.cols);
-	mlp.train(X, Y, 0.01, 0.001, 200);
+	MLP mlp(X, Y, 3);
+	mlp.train(X, Y, 0.1, 0.01, 3000);
 
 	for (int i = 0; i < N; ++i) {
 		cv::Mat_<double> x(1, X.cols);

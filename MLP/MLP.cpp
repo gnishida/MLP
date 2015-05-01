@@ -9,7 +9,9 @@
  * @param Y				出力データ（各行が、各出力y_iに相当）
  * @param hiddenSize	hiddenレイヤのユニット数
  */
-MLP::MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_in, int n_hidden, int n_out) {
+MLP::MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_hidden) {
+	int n_in = X.cols;
+	int n_out = Y.cols;
 	hiddenLayer = new HiddenLayer(X, n_in, n_hidden);
 	regressionLayer = new LinearRegression(hiddenLayer->output, n_hidden, n_out);
 }
@@ -128,7 +130,7 @@ cv::Mat_<double> MLP::predict(const Mat_<double>& input) {
 }
 
 double MLP::cost(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, double lambda) {
-	double L = mat_sqsum(Y - regressionLayer->output) * 0.5;
+	double L = mat_sqsum(Y - regressionLayer->output) * 0.5 / X.rows;
 	L += lambda * 0.5 * (mat_sqsum(hiddenLayer->W) + mat_sqsum(hiddenLayer->b) + mat_sqsum(regressionLayer->W) + mat_sqsum(regressionLayer->b));
 	return L;
 }

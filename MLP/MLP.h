@@ -16,7 +16,7 @@ private:
 	LinearRegression* regressionLayer;
 
 public:
-	MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_in, int n_hidden, int n_out);
+	MLP(const Mat_<double>& X, const Mat_<double>& Y, int n_hidden);
 
 	void train(const Mat_<double>& X, const Mat_<double>& Y, double lambda, double alpha, int maxIter);
 	void numericalGrad(const cv::Mat_<double>& X, const cv::Mat_<double>& Y, double lambda, cv::Mat_<double>& dW1, cv::Mat_<double>& db1, cv::Mat_<double>& dW2, cv::Mat_<double>& db2);
